@@ -1,10 +1,9 @@
-
 import openai
 
 def generate_intro(prompt, api_key):
     try:
-        openai.api_key = api_key
-        response = openai.ChatCompletion.create(
+        client = openai.OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Du bist ein hilfreicher Bewerbungsexperte."},
