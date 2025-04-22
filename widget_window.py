@@ -1,6 +1,6 @@
 
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import threading
 import time
 
@@ -28,7 +28,7 @@ def simulate_processing(callback=None):
     percent_label.pack()
 
     progress_var = tk.IntVar()
-    progress_bar = tk.ttk.Progressbar(root, orient="horizontal", length=150, mode="determinate", variable=progress_var)
+    progress_bar = ttk.Progressbar(root, orient="horizontal", length=150, mode="determinate", variable=progress_var)
     progress_bar.pack(pady=5)
 
     close_button = tk.Button(root, text="❌", command=close_widget)
@@ -40,7 +40,7 @@ def simulate_processing(callback=None):
 def show_done_popup():
     popup = tk.Tk()
     popup.withdraw()
-    popup.after(100, lambda: tk.messagebox.showinfo("WŒRK", "📁 Verarbeitung abgeschlossen."))
+    popup.after(100, lambda: messagebox.showinfo("WŒRK", "📁 Verarbeitung abgeschlossen."))
     popup.mainloop()
 
 if __name__ == "__main__":
