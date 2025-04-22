@@ -29,6 +29,7 @@ def run_generation():
     job = job_entry.get("1.0", tk.END).strip()
     api_key = api_key_entry.get().strip()
     cv_path = cv_entry.get().strip()
+    style_level = style_var.get()
 
     if not job or not api_key or not cv_path:
         messagebox.showerror("Fehler", "Bitte alle Felder ausfüllen.")
@@ -36,9 +37,8 @@ def run_generation():
 
     save_config(api_key, cv_path)
     intro = generate_intro(job, api_key)
-    letter = generate_cover_letter(job, cv_path, api_key)
+    letter = generate_cover_letter(job, cv_path, api_key, style_level)
     messagebox.showinfo("Fertig", f"Intro:\n{intro}\n\nAnschreiben:\n{letter}")
-
 
 root = tk.Tk()
 root.title("WŒRK – dein Jobschmied")
@@ -55,6 +55,12 @@ tk.Label(root, text="Lebenslauf (PDF):").pack()
 cv_entry = tk.Entry(root, width=40)
 cv_entry.pack(side=tk.LEFT, padx=(10, 0))
 tk.Button(root, text="Durchsuchen", command=lambda: browse_cv(cv_entry)).pack(side=tk.LEFT)
+
+# Sprachlicher Stil
+tk.Label(root, text="Sprachlicher Stil (1 = direkt / 10 = diplomatisch):").pack(pady=(10, 0))
+style_var = tk.StringVar(value="7")
+style_menu = tk.OptionMenu(root, style_var, *[str(i) for i in range(1, 11)])
+style_menu.pack()
 
 tk.Button(root, text="Generieren", command=run_generation).pack(pady=10)
 
