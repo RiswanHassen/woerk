@@ -1,4 +1,3 @@
-
 def generate_cover_letter(job_description, cv_path, api_key, style_level):
     # GPT-Prompt mit Stilskala
     prompt = f"""

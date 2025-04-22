@@ -1,10 +1,10 @@
-
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import json
 import os
 from gpt_engine import generate_intro
 from cover_letter_gen import generate_cover_letter
+from input_level_select import ask_contribution_level
 
 CONFIG_PATH = 'config/config.json'
 
@@ -40,6 +40,9 @@ def run_generation():
     letter = generate_cover_letter(job, cv_path, api_key, style_level)
     messagebox.showinfo("Fertig", f"Intro:\n{intro}\n\nAnschreiben:\n{letter}")
 
+# Start mit Beitragsstufe
+user_input = ask_contribution_level()
+
 root = tk.Tk()
 root.title("WŒRK – dein Jobschmied")
 
@@ -57,8 +60,8 @@ cv_entry.pack(side=tk.LEFT, padx=(10, 0))
 tk.Button(root, text="Durchsuchen", command=lambda: browse_cv(cv_entry)).pack(side=tk.LEFT)
 
 # Sprachlicher Stil
-tk.Label(root, text="Sprachlicher Stil (1 = direkt / 10 = diplomatisch):").pack(pady=(10, 0))
 style_var = tk.StringVar(value="7")
+tk.Label(root, text="Sprachlicher Stil (1 = direkt / 10 = diplomatisch):").pack(pady=(10, 0))
 style_menu = tk.OptionMenu(root, style_var, *[str(i) for i in range(1, 11)])
 style_menu.pack()
 
