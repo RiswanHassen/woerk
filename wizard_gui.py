@@ -9,7 +9,7 @@ except:
     from mock_gpt import generate_intro, generate_cover_letter
 
 state = {
-    "level": "wenig",
+    "level": "nichts",
     "folder_path": "",
     "resume_path": "",
     "freitext": "",
@@ -28,10 +28,11 @@ def list_files_in_folder(path):
 def show_main_window():
     def update_state():
         state["folder_path"] = folder_label.cget("text")
-        state["resume_path"] = resume_entry.get().strip()
-        state["freitext"] = freitext_entry.get("1.0", tk.END).strip()
-        state["gehalt"] = gehalt_entry.get().strip()
-        state["waehrung"] = waehrung_var.get()
+        if state["level"] == "wenig":
+            state["resume_path"] = resume_entry.get().strip()
+            state["freitext"] = freitext_entry.get("1.0", tk.END).strip()
+            state["gehalt"] = gehalt_entry.get().strip()
+            state["waehrung"] = waehrung_var.get()
         state["api_key"] = api_entry.get().strip()
         state["api_sandbox"] = api_sandbox_var.get()
 
@@ -57,40 +58,39 @@ def show_main_window():
         show_mode_selection()
 
     root = tk.Tk()
-    root.title("WŒRK – Lokale Version (Fallback Drag & Drop)")
+    root.title("WŒRK – Lokale Version")
 
     tk.Label(root, text="Wähle einen Ordner mit deinen Bewerbungsunterlagen:").pack(pady=(10, 0))
     tk.Button(root, text="Ordner auswählen", command=select_folder).pack()
     folder_label = tk.Label(root, text=state["folder_path"] or "[Noch kein Ordner ausgewählt]")
     folder_label.pack(pady=(5, 10))
 
-    tk.Label(root, text="Lebenslauf (optional):").pack()
-    resume_entry = tk.Entry(root, width=60)
-    resume_entry.insert(0, state["resume_path"])
-    resume_entry.pack(pady=(5, 0))
-    tk.Button(root, text="Datei auswählen", command=select_resume_file).pack(pady=(0, 5))
+    if state["level"] == "wenig":
+        # Lebenslauf
+        tk.Label(root, text="Lebenslauf (optional):").pack()
+        resume_entry = tk.Entry(root, width=60)
+        resume_entry.insert(0, state["resume_path"])
+        resume_entry.pack(pady=(5, 0))
+        tk.Button(root, text="Datei auswählen", command=select_resume_file).pack(pady=(0, 5))
 
-    try:
-        import tkinterdnd2 as tkdnd
-        from tkinterdnd2 import TkinterDnD
-        resume_entry.drop_target_register(tkdnd.DND_FILES)
-        resume_entry.dnd_bind('<<Drop>>', lambda event: resume_entry.delete(0, tk.END) or resume_entry.insert(0, event.data.strip('{}')))
-    except ImportError:
-        tk.Label(root, text="(Drag & Drop nicht verfügbar – Modul tkinterdnd2 fehlt)", fg="gray").pack()
+        tk.Label(root, text="Was wünschst du dir beruflich? (Freitext):").pack()
+        freitext_entry = tk.Text(root, height=4, width=50)
+        freitext_entry.insert("1.0", state["freitext"])
+        freitext_entry.pack()
 
-    tk.Label(root, text="Was wünschst du dir beruflich? (Freitext):").pack()
-    freitext_entry = tk.Text(root, height=4, width=50)
-    freitext_entry.insert("1.0", state["freitext"])
-    freitext_entry.pack()
+        tk.Label(root, text="Gewünschtes Jahresgehalt (brutto):").pack()
+        gehalt_entry = tk.Entry(root, width=20)
+        gehalt_entry.insert(0, state["gehalt"])
+        gehalt_entry.pack()
 
-    tk.Label(root, text="Gewünschtes Jahresgehalt (brutto):").pack()
-    gehalt_entry = tk.Entry(root, width=20)
-    gehalt_entry.insert(0, state["gehalt"])
-    gehalt_entry.pack()
-
-    tk.Label(root, text="Währung:").pack()
-    waehrung_var = tk.StringVar(value=state["waehrung"])
-    tk.OptionMenu(root, waehrung_var, "EUR", "USD", "GBP", "CHF", "SEK").pack()
+        tk.Label(root, text="Währung:").pack()
+        waehrung_var = tk.StringVar(value=state["waehrung"])
+        tk.OptionMenu(root, waehrung_var, "EUR", "USD", "GBP", "CHF", "SEK").pack()
+    else:
+        resume_entry = tk.Entry()
+        freitext_entry = tk.Text()
+        gehalt_entry = tk.Entry()
+        waehrung_var = tk.StringVar()
 
     tk.Label(root, text="OpenAI API Key:").pack()
     api_entry = tk.Entry(root, width=50, show="*")
