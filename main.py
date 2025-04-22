@@ -37,11 +37,8 @@ def run_generation():
     save_config(api_key, cv_path)
     intro = generate_intro(job, api_key)
     letter = generate_cover_letter(job, cv_path, api_key)
-    messagebox.showinfo("Fertig", f"Intro:
-{intro}
+    messagebox.showinfo("Fertig", f"Intro:\n{intro}\n\nAnschreiben:\n{letter}")
 
-Anschreiben:
-{letter}")
 
 root = tk.Tk()
 root.title("WŒRK – dein Jobschmied")
