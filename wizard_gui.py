@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import os
@@ -55,41 +56,27 @@ def show_main_window():
         root.destroy()
         show_mode_selection()
 
-    def drop(event):
-        file_path = event.data.strip('{}')
-        resume_entry.delete(0, tk.END)
-        resume_entry.insert(0, file_path)
-
     root = tk.Tk()
-    root.title("WŒRK – Lokale Version")
+    root.title("WŒRK – Lokale Version (Fallback Drag & Drop)")
 
     tk.Label(root, text="Wähle einen Ordner mit deinen Bewerbungsunterlagen:").pack(pady=(10, 0))
     tk.Button(root, text="Ordner auswählen", command=select_folder).pack()
     folder_label = tk.Label(root, text=state["folder_path"] or "[Noch kein Ordner ausgewählt]")
     folder_label.pack(pady=(5, 10))
 
-    # Lebenslauf-Zone mit Datei auswählen + Drag & Drop
     tk.Label(root, text="Lebenslauf (optional):").pack()
     resume_entry = tk.Entry(root, width=60)
     resume_entry.insert(0, state["resume_path"])
     resume_entry.pack(pady=(5, 0))
     tk.Button(root, text="Datei auswählen", command=select_resume_file).pack(pady=(0, 5))
 
-    # Drag & Drop sichtbar machen (funktioniert mit tkinterDnD2 – optional)
-    dnd_frame = tk.Frame(root, bd=2, relief=tk.RIDGE, width=380, height=40)
-    dnd_frame.pack(pady=(0, 10))
-    dnd_frame.pack_propagate(False)
-    drop_label = tk.Label(dnd_frame, text="📄 Drag CV here", fg="gray")
-    drop_label.pack(expand=True)
-
     try:
         import tkinterdnd2 as tkdnd
-        root.destroy()
-        root = tkdnd.TkinterDnD.Tk()
+        from tkinterdnd2 import TkinterDnD
         resume_entry.drop_target_register(tkdnd.DND_FILES)
-        resume_entry.dnd_bind('<<Drop>>', drop)
+        resume_entry.dnd_bind('<<Drop>>', lambda event: resume_entry.delete(0, tk.END) or resume_entry.insert(0, event.data.strip('{}')))
     except ImportError:
-        print("tkinterdnd2 nicht installiert – Drag & Drop deaktiviert")
+        tk.Label(root, text="(Drag & Drop nicht verfügbar – Modul tkinterdnd2 fehlt)", fg="gray").pack()
 
     tk.Label(root, text="Was wünschst du dir beruflich? (Freitext):").pack()
     freitext_entry = tk.Text(root, height=4, width=50)
