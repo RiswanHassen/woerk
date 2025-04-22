@@ -2,7 +2,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import os
-from dropbox_parser import get_dropbox_folder_files
 
 try:
     from gpt_engine import generate_intro, generate_cover_letter
@@ -11,38 +10,40 @@ except:
 
 state = {
     "level": "nichts",
-    "cloud_link": "",
+    "folder_path": "",
     "resume_path": "",
     "freitext": "",
     "gehalt": "",
     "waehrung": "EUR",
-    "cloud_sandbox": False,
     "api_sandbox": False,
     "api_key": ""
 }
 
+def list_files_in_folder(path):
+    try:
+        return [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    except Exception as e:
+        return [f"[Fehler beim Lesen des Ordners] {e}"]
+
 def show_main_window():
     def update_state():
-        state["cloud_link"] = cloud_entry.get().strip()
+        state["folder_path"] = folder_label.cget("text")
         state["resume_path"] = resume_entry.get().strip()
         state["freitext"] = freitext_entry.get("1.0", tk.END).strip()
         state["gehalt"] = gehalt_entry.get().strip()
         state["waehrung"] = waehrung_var.get()
         state["api_key"] = api_entry.get().strip()
-        state["cloud_sandbox"] = cloud_sandbox_var.get()
         state["api_sandbox"] = api_sandbox_var.get()
+
+    def select_folder():
+        path = filedialog.askdirectory()
+        if path:
+            folder_label.config(text=path)
 
     def go_action():
         update_state()
-        if state["cloud_sandbox"]:
-            files = get_dropbox_folder_files(state["cloud_link"])
-            messagebox.showinfo("Cloud-Inhalt", "📂 Gefundene Dateien:\n" + "\n".join(files))
-        elif state["api_sandbox"]:
-            intro = generate_intro(state["freitext"])
-            letter = generate_cover_letter(state["freitext"], state["resume_path"], style_level=state["waehrung"])
-            messagebox.showinfo("Sandbox Test", f"Intro:\n{intro}\n\nAnschreiben:\n{letter}")
-        else:
-            messagebox.showinfo("Under Construction", "🚧 Diese Funktion wird aktuell gebaut – stay tuned!")
+        files = list_files_in_folder(state["folder_path"])
+        messagebox.showinfo("Verarbeite lokal", "📂 Enthaltene Dateien:\n" + "\n".join(files))
 
     def back_action():
         update_state()
@@ -50,18 +51,15 @@ def show_main_window():
         show_mode_selection()
 
     root = tk.Tk()
-    root.title("WŒRK – Deine Angaben")
+    root.title("WŒRK – Lokale Version")
 
-    tk.Label(root, text="Link zu deinem Cloudspeicher-Ordner:").pack(pady=(10, 0))
-    cloud_entry = tk.Entry(root, width=50)
-    cloud_entry.insert(0, state["cloud_link"])
-    cloud_entry.pack()
-
-    cloud_sandbox_var = tk.BooleanVar(value=state["cloud_sandbox"])
-    tk.Checkbutton(root, text="Sandbox Mode", variable=cloud_sandbox_var).pack()
+    tk.Label(root, text="Wähle einen Ordner mit deinen Bewerbungsunterlagen:").pack(pady=(10, 0))
+    tk.Button(root, text="Ordner auswählen", command=select_folder).pack()
+    folder_label = tk.Label(root, text=state["folder_path"] or "[Noch kein Ordner ausgewählt]")
+    folder_label.pack(pady=(5, 10))
 
     if state["level"] in ["wenig", "moderat"]:
-        tk.Label(root, text="Lebenslauf-Entwurf (optional, lokal oder Cloud-Link):").pack(pady=(10, 0))
+        tk.Label(root, text="Lebenslauf-Entwurf (optional):").pack()
         resume_entry = tk.Entry(root, width=50)
         resume_entry.insert(0, state["resume_path"])
         resume_entry.pack()
@@ -69,7 +67,7 @@ def show_main_window():
         resume_entry = tk.Entry()
 
     if state["level"] == "wenig":
-        tk.Label(root, text="Was wünschst du dir beruflich? (Freitext):").pack(pady=(10, 0))
+        tk.Label(root, text="Was wünschst du dir beruflich? (Freitext):").pack()
         freitext_entry = tk.Text(root, height=4, width=50)
         freitext_entry.insert("1.0", state["freitext"])
         freitext_entry.pack()
@@ -77,7 +75,7 @@ def show_main_window():
         freitext_entry = tk.Text()
 
     if state["level"] == "wenig":
-        tk.Label(root, text="Gewünschtes Jahresgehalt (brutto):").pack(pady=(10, 0))
+        tk.Label(root, text="Gewünschtes Jahresgehalt (brutto):").pack()
         gehalt_entry = tk.Entry(root, width=20)
         gehalt_entry.insert(0, state["gehalt"])
         gehalt_entry.pack()
@@ -89,7 +87,7 @@ def show_main_window():
         gehalt_entry = tk.Entry()
         waehrung_var = tk.StringVar()
 
-    tk.Label(root, text="OpenAI API Key:").pack(pady=(10, 0))
+    tk.Label(root, text="OpenAI API Key:").pack()
     api_entry = tk.Entry(root, width=50, show="*")
     api_entry.insert(0, state["api_key"])
     api_entry.config(state=tk.DISABLED if state["api_sandbox"] else tk.NORMAL)
@@ -118,7 +116,7 @@ def show_mode_selection():
     var = tk.StringVar(value=state["level"])
 
     options = {
-        "nichts": "Nur Cloud-Ordner – alles automatisch.",
+        "nichts": "Nur Ordner auswählen – alles automatisch.",
         "wenig": "Zusätzlich Freitext, Gehalt und Lebenslaufentwurf.",
         "moderat": "Weitere Details (in Vorbereitung)."
     }
