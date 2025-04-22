@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import os
+from dropbox_parser import get_dropbox_folder_files
 
 try:
     from gpt_engine import generate_intro, generate_cover_letter
@@ -20,9 +21,6 @@ state = {
     "api_key": ""
 }
 
-def mock_list_cloud_folder(link):
-    return ["test1.pdf", "old_cv.docx", "notes.txt"]
-
 def show_main_window():
     def update_state():
         state["cloud_link"] = cloud_entry.get().strip()
@@ -37,7 +35,7 @@ def show_main_window():
     def go_action():
         update_state()
         if state["cloud_sandbox"]:
-            files = mock_list_cloud_folder(state["cloud_link"])
+            files = get_dropbox_folder_files(state["cloud_link"])
             messagebox.showinfo("Cloud-Inhalt", "📂 Gefundene Dateien:\n" + "\n".join(files))
         elif state["api_sandbox"]:
             intro = generate_intro(state["freitext"])
